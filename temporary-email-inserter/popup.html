@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛡️ Temp Email</h1>
+    </header>
+    
+    <div id="email-display" class="hidden">
+      <div class="email-card">
+        <div class="email-label">Your Temporary Email:</div>
+        <div class="email-address" id="current-email">-</div>
+        <button class="copy-btn" id="copy-btn">📋 Copy</button>
+      </div>
+      
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label">Created:</span>
+          <span id="created-time">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Messages:</span>
+          <span id="message-count">0</span>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" id="check-inbox">📬 Check Inbox</button>
+      <button class="btn btn-secondary" id="refresh-email">🔄 New Email</button>
+    </div>
+    
+    <div id="no-email" class="empty-state">
+      <div class="icon">📭</div>
+      <p>No temporary email yet</p>
+      <button class="btn btn-primary" id="generate-btn">Generate Email</button>
+    </div>
+    
+    <div id="inbox-modal" class="modal hidden">
+      <div class="modal-header">
+        <h2>📬 Inbox</h2>
+        <button class="close-btn" id="close-inbox">✕</button>
+      </div>
+      <div id="messages-list" class="messages-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+      <div id="inbox-modal" class="modal hidden">
+      <div class="modal-header">
+        <h2>📬 Inbox <span id="refresh-inbox" class="refresh-icon">🔄</span></h2>
+        <button class="close-btn" id="close-inbox">✕</button>
+      </div>
+      <div id="messages-list" class="messages-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  <script src="popup.js"></script>
+</body>
+</html>

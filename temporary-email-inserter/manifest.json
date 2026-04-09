@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Temporary Email Inserter",
+  "version": "1.0.0",
+  "description": "Quickly insert disposable email addresses into sign-up forms",
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.mail.tm/*",
+    "https://api.mail.gw/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
