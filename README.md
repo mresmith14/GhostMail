@@ -6,7 +6,7 @@ A Chrome extension that instantly generates disposable email addresses and inser
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![API: Mail.tm](https://img.shields.io/badge/API-Mail.tm-orange)](https://mail.tm)
 
-![Extension Preview](screenshots/preview.png)
+![Extension Preview](/preview.png)
 
 ## ✨ Features
 
