@@ -26,3 +26,8 @@ A Chrome extension that instantly generates disposable email addresses and inser
 1. Download or clone this repository
    ```bash
    git clone https://github.com/yourusername/temporary-email-inserter.git
+2. Open Chrome and navigate to chrome://extensions/
+3. Enable Developer mode (toggle in top-right corner)
+4. Click Load unpacked
+5. Select the temporary-email-inserter folder
+6. The extension icon will appear in your toolbar 🎉
