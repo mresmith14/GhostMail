@@ -16,13 +16,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   let currentToken = null;
+  let currentEmailData = null;
   let autoRefreshInterval = null;
+  let messages = [];
 
   // Load current email
   const data = await chrome.storage.local.get('currentEmail');
   updateUI(data.currentEmail);
   
   if (data.currentEmail) {
+    currentEmailData = data.currentEmail;
     startAutoRefresh(data.currentEmail.token);
   }
 
@@ -60,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       await chrome.storage.local.set({ currentEmail: emailData });
+      currentEmailData = emailData;
       updateUI(emailData);
       startAutoRefresh(tokenData.token);
       
@@ -100,13 +104,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      const messages = data['hydra:member'] || [];
+      messages = data['hydra:member'] || [];
       
       elements.messageCount.textContent = messages.length;
       
       // If inbox modal is open, refresh it
       if (!elements.inboxModal.classList.contains('hidden')) {
-        displayMessages(messages, token);
+        displayMessages(messages);
       }
       
       return messages;
@@ -116,8 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function displayMessages(messages, token) {
-    if (messages.length === 0) {
+  function displayMessages(msgs) {
+    if (msgs.length === 0) {
       elements.messagesList.innerHTML = `
         <div class="empty">
           <div class="empty-icon">📭</div>
@@ -126,52 +130,88 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       `;
     } else {
-      elements.messagesList.innerHTML = messages.map(msg => `
-        <div class="message-item" data-id="${msg.id}">
+      elements.messagesList.innerHTML = msgs.map((msg, index) => `
+        <div class="message-item" data-index="${index}">
           <div class="message-header">
-            <div class="message-from">${msg.from.name || msg.from.address}</div>
+            <div class="message-from">${escapeHtml(msg.from.name || msg.from.address)}</div>
             <div class="message-time">${new Date(msg.createdAt).toLocaleTimeString()}</div>
           </div>
-          <div class="message-subject">${msg.subject}</div>
-          <div class="message-preview">${msg.intro || 'No preview available'}</div>
-          <button class="view-message-btn" onclick="viewMessage('${msg.id}', '${token}')">View Full Message</button>
+          <div class="message-subject">${escapeHtml(msg.subject)}</div>
+          <div class="message-preview">${escapeHtml(msg.intro || 'No preview available')}</div>
+          <button class="view-message-btn" data-index="${index}">View Full Message</button>
         </div>
       `).join('');
+
+      // Attach click handlers to view buttons
+      document.querySelectorAll('.view-message-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          viewMessage(index);
+        });
+      });
     }
   }
 
-  // Make viewMessage globally accessible
-  window.viewMessage = async function(messageId, token) {
+  async function viewMessage(index) {
+    const msg = messages[index];
+    if (!msg || !currentToken) return;
+    
     try {
-      const response = await fetch(`https://api.mail.tm/messages/${messageId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      elements.messagesList.innerHTML = '<div class="loading">Loading message...</div>';
+      
+      const response = await fetch(`https://api.mail.tm/messages/${msg.id}`, {
+        headers: { 'Authorization': `Bearer ${currentToken}` }
       });
       const message = await response.json();
       
-      // Display full message in a modal or expanded view
+      // Display full message
       const messageHtml = `
         <div class="full-message">
           <div class="full-message-header">
-            <h3>${message.subject}</h3>
-            <div class="meta">From: ${message.from.address}</div>
+            <h3>${escapeHtml(message.subject)}</h3>
+            <div class="meta">From: ${escapeHtml(message.from.address)}</div>
             <div class="meta">Date: ${new Date(message.createdAt).toLocaleString()}</div>
+            ${message.to ? `<div class="meta">To: ${escapeHtml(message.to[0]?.address || '')}</div>` : ''}
           </div>
           <div class="message-body">
-            ${message.html || message.text || 'No content'}
+            ${message.html || formatTextBody(message.text) || '<p>No content</p>'}
           </div>
-          <button class="btn btn-secondary" onclick="backToInbox()">← Back to Inbox</button>
+          <button class="btn btn-secondary back-btn">← Back to Inbox</button>
         </div>
       `;
       
       elements.messagesList.innerHTML = messageHtml;
+      
+      // Attach back button handler
+      document.querySelector('.back-btn').addEventListener('click', () => {
+        displayMessages(messages);
+      });
+      
     } catch (error) {
       console.error('Error fetching message:', error);
+      elements.messagesList.innerHTML = `
+        <div class="empty">
+          <p>Error loading message</p>
+          <button class="btn btn-secondary" onclick="displayMessages(messages)">← Back</button>
+        </div>
+      `;
     }
-  };
+  }
 
-  window.backToInbox = function() {
-    checkMessages(currentToken, true);
-  };
+  function formatTextBody(text) {
+    if (!text) return '';
+    // Convert plain text to HTML with line breaks
+    return '<pre style="white-space: pre-wrap; font-family: inherit;">' + 
+           escapeHtml(text) + 
+           '</pre>';
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
   function startAutoRefresh(token) {
     stopAutoRefresh();
@@ -202,12 +242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   elements.refreshEmail.addEventListener('click', generateEmail);
   
   elements.checkInbox.addEventListener('click', async () => {
-    const data = await chrome.storage.local.get('currentEmail');
-    if (!data.currentEmail) return;
+    if (!currentEmailData) return;
     
     elements.inboxModal.classList.remove('hidden');
-    const messages = await checkMessages(data.currentEmail.token, true);
-    displayMessages(messages, data.currentEmail.token);
+    await checkMessages(currentEmailData.token, true);
+    displayMessages(messages);
   });
 
   elements.closeInbox.addEventListener('click', () => {
@@ -216,9 +255,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Refresh inbox button
   if (elements.refreshInbox) {
-    elements.refreshInbox.addEventListener('click', () => {
-      if (currentToken) {
-        checkMessages(currentToken, true);
+    elements.refreshInbox.addEventListener('click', async () => {
+      if (currentEmailData) {
+        await checkMessages(currentEmailData.token, true);
+        displayMessages(messages);
       }
     });
   }
