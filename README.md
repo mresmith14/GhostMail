@@ -37,23 +37,23 @@ Pending review - link will be added here
 
 📖 How to Use
 Method 1: Right-Click (Fastest)
-Click on any email input field on a website
-Right-click → Insert Temporary Email
-Choose Generate New Email or Use Existing Email
-Done! Email is inserted and ready
+1. Click on any email input field on a website
+2. Right-click → Insert Temporary Email
+3. Choose Generate New Email or Use Existing Email
+4. Done! Email is inserted and ready
 
 Method 2: Extension Popup
-Click the 🛡️ icon in your Chrome toolbar
-Click Generate Email
-Copy the address with one click
-Paste manually or use auto-insert
+1. Click the 🛡️ icon in your Chrome toolbar
+2. Click Generate Email
+3. Copy the address with one click
+4. Paste manually or use auto-insert
 
 Reading Verification Emails
-Click the extension icon
-Click 📬 Check Inbox
-Wait for emails (auto-refreshes every 10s)
-Click View Full Message to see verification codes or links
-Click links directly or copy codes
+1. Click the extension icon
+2. Click 📬 Check Inbox
+3. Wait for emails (auto-refreshes every 10s)
+4. Click View Full Message to see verification codes or links
+5. Click links directly or copy codes
 
 🏗️ Project Structure
 temporary-email-inserter/
